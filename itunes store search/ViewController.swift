@@ -12,14 +12,12 @@ var movies: [rest_api.movie] = []
 class ColViewCell: UICollectionViewCell {
     var async_urlsession: URLSessionDataTask?
     
-    // self.tag is the index in current_view_images
-    
     override func prepareForReuse() {
         // this is called when a cell is dequeue'd, rather than it just having an id or
         // something terribly complicated like that
         
         // stop any existing async requests for this thumbnail
-        //async_urlsession?.cancel()
+        async_urlsession?.cancel()
     }
     
     // this is called to build the cell
@@ -32,12 +30,53 @@ class ColViewCell: UICollectionViewCell {
             v.removeFromSuperview()
         }
         
-        let label: UILabel = UILabel(frame: CGRect(x: 5, y: 5, width: self.frame.width, height: self.frame.height))
+        // show the track name
+        let label: UILabel = UILabel(frame: CGRect(x: 5, y: 5, width: self.frame.width, height: 10))
         label.textAlignment = .left
         label.textColor = .black
         label.font = label.font.withSize(10.0)
         label.text = movies[id].trackName
         contentView.addSubview(label)
+        
+        if (movies[id].artworkUrl100 != nil) {
+            // show the thumbnail
+            let img: UIImageView = UIImageView(frame: CGRect(x: 0, y: 20, width: 100, height: 100))
+            
+            // setup the request
+            let req_url = URL(string: movies[id].artworkUrl100!)
+            print(req_url)
+            var request = URLRequest(url: req_url!);
+            
+            // set the method
+            request.httpMethod = "GET";
+            
+            let session = URLSession(configuration: URLSessionConfiguration.default)
+            async_urlsession = session.dataTask(with: request) { data, response, error in
+                let httpResponse = response as? HTTPURLResponse
+                if (httpResponse == nil || data == nil) {
+                    // this will happen when the request is cancelled
+                    // or there is a failure with the request
+                    return
+                }
+                if (200...299).contains(httpResponse!.statusCode) {
+                    // good response
+                    DispatchQueue.main.async {
+                        let th = UIImage(data: data!)
+                        
+                        img.frame.size.width = (th?.size.width)!
+                        img.frame.size.height = (th?.size.height)!
+                        
+                        img.image = th
+                        
+                        self.contentView.addSubview(img)
+                    }
+                }
+                
+            }
+            
+            async_urlsession?.resume()
+            
+        }
     }
     
 }
