@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import AVKit
+import AVFoundation
+
 var movies: [rest_api.movie] = []
 
 class ColViewCell: UICollectionViewCell {
@@ -127,6 +130,113 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         return cell
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        //print("tapped cell " + String(indexPath.row))
+        
+        // show the single_app_view
+        show_single_app(id: indexPath.row)
+        
+    }
+    
+    var async_urlsession: URLSessionDataTask?
+    func show_single_app(id: Int) {
+        
+        if (async_urlsession != nil) {
+            async_urlsession?.cancel()
+        }
+        
+        // remove anything
+        for v: UIView in single_app_view.subviews {
+            v.removeFromSuperview()
+        }
+        
+        // show the track name
+        let label: UILabel = UILabel(frame: CGRect(x: 5, y: 5, width: 300, height: 20))
+        label.textAlignment = .left
+        label.textColor = .black
+        label.font = label.font.withSize(24.0)
+        label.text = movies[id].trackName
+        single_app_view.addSubview(label)
+        
+        // show the price
+        let n = NumberFormatter()
+        n.locale = Locale.current
+        n.numberStyle = .currency
+        let price: UILabel = UILabel(frame: CGRect(x: 5, y: 25, width: 300, height: 20))
+        price.textAlignment = .left
+        price.textColor = .black
+        price.font = price.font.withSize(24.0)
+        price.text = n.string(from: movies[id].trackPrice as! NSNumber)
+        single_app_view.addSubview(price)
+        
+        if (movies[id].artworkUrl100 != nil) {
+            // show the thumbnail
+            let img: UIImageView = UIImageView(frame: CGRect(x: 5, y: 80, width: 100, height: 100))
+            
+            // setup the request
+            let req_url = URL(string: movies[id].artworkUrl100!)
+            print(req_url)
+            var request = URLRequest(url: req_url!);
+            
+            // set the method
+            request.httpMethod = "GET";
+            
+            let session = URLSession(configuration: URLSessionConfiguration.default)
+            async_urlsession = session.dataTask(with: request) { data, response, error in
+                let httpResponse = response as? HTTPURLResponse
+                if (httpResponse == nil || data == nil) {
+                    // this will happen when the request is cancelled
+                    // or there is a failure with the request
+                    return
+                }
+                if (200...299).contains(httpResponse!.statusCode) {
+                    // good response
+                    DispatchQueue.main.async {
+                        let th = UIImage(data: data!)
+                        
+                        img.frame.size.width = (th?.size.width)!
+                        img.frame.size.height = (th?.size.height)!
+                        
+                        img.image = th
+                        
+                        self.single_app_view.addSubview(img)
+                    }
+                }
+                
+            }
+            
+            async_urlsession?.resume()
+            
+        }
+        
+        //let asset = AVURLAsset.init(url: URL.init(string: movies[id].previewUrl!)!)
+        //let item = AVPlayerItem(asset: asset)
+        //let player = AVPlayer(playerItem: item)
+        print(movies[id].previewUrl)
+        let player = AVPlayer(url: URL.init(string: movies[id].previewUrl!)!)
+        let playerViewController = AVPlayerViewController()
+        playerViewController.player = player
+        
+        playerViewController.view.frame.origin.x = 5
+        playerViewController.view.frame.origin.y = 190
+        playerViewController.view.frame.size.width = 320
+        playerViewController.view.frame.size.height = 240
+        
+        let delegate : AppDelegate = UIApplication.shared.delegate as! AppDelegate
+        delegate.window?.rootViewController?.present(playerViewController, animated: true) {
+            playerViewController.player!.play()
+        }
+        
+        player.play()
+        
+        single_app_view.isHidden = false
+        
+    }
+    
+    @objc func tap(sender: UITapGestureRecognizer) {
+        // single_app_view was tapped, hide it
+        single_app_view.isHidden = true
+    }
 
     @IBOutlet weak var colview_apps: UICollectionView!
     @IBOutlet weak var search_field: UITextField!
@@ -199,6 +309,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         colview_apps.dataSource = self
         colview_apps.delegate = self
         search_field.delegate = self
+        
+        let tapper = UITapGestureRecognizer(target: self, action: #selector(tap(sender:)))
+        single_app_view.addGestureRecognizer(tapper)
         
         colview_apps.reloadData()
     }
