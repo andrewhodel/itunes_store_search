@@ -57,7 +57,7 @@
                     </view>
                     <connections>
                         <outlet property="colview_apps" destination="hPM-tE-VhZ" id="EHt-19-rdm"/>
-                        <outlet property="search_field_apps" destination="hcd-7F-GYO" id="PBP-m3-yMP"/>
+                        <outlet property="search_field" destination="hcd-7F-GYO" id="ube-vI-zSj"/>
                         <outlet property="single_app_view" destination="DQb-w2-KpS" id="aNB-HC-MtM"/>
                     </connections>
                 </viewController>

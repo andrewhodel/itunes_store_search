@@ -16,6 +16,10 @@ class rest_api: NSObject {
         var wrapperType: String?
         var kind: String?
         var previewUrl: String?
+        var artworkUrl100: String?
+        var artistName: String?
+        var trackName: String?
+        var trackPrice: Double?
     }
     
     struct result: Decodable {
@@ -34,16 +38,30 @@ class rest_api: NSObject {
         
     }
     
-    // make a get request
-    func get_request(endpoint: String, args: [String:String] = [:]) -> get_request_resp {
+    func get_request_async(endpoint: String, args: [String:String] = [:], completion: @escaping (_ result: (Bool, Data)) -> Void) -> URLSessionDataTask {
         
         // safe urlencode, swift doesn't get =, + and / which can exist in base64
         var arg_string = ""
         for (key, val) in args {
-            var enc_key = (key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)) ?? ""
-            var enc_val = (val.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)) ?? ""
+            
+            var new_val = val
             
             var qs = ""
+            for char in val {
+                if (char == " ") {
+                    // this api wants + for spaces
+                    qs = qs + "+"
+                } else {
+                    qs = qs + String(char)
+                }
+            }
+            
+            new_val = qs
+            
+            var enc_key = (key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)) ?? ""
+            var enc_val = (new_val.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)) ?? ""
+            
+            qs = ""
             for char in enc_key {
                 if (char == "=") {
                     qs = qs + "%3D"
@@ -62,8 +80,6 @@ class rest_api: NSObject {
             for char in enc_val {
                 if (char == "=") {
                     qs = qs + "%3D"
-                } else if (char == "+") {
-                    qs = qs + "%2B"
                 } else if (char == "/") {
                     qs = qs + "%2F"
                 } else {
@@ -82,64 +98,60 @@ class rest_api: NSObject {
         
         // setup the request
         let req_url = URL(string: self.url + endpoint + "?entity=movie&media=movie" + arg_string)
-        //print(req_url)
+        print(req_url)
         var request = URLRequest(url: req_url!);
         
         // set the method
         request.httpMethod = method;
         
-        // semaphore can make an async call sync with signal() inside the async function and wait() outside
-        let semaphore = DispatchSemaphore(value: 0)
-        
-        // setup the session, we are not using a shared session
-        let session = URLSession(configuration: URLSessionConfiguration.default);
+        let session = URLSession(configuration: URLSessionConfiguration.default)
         let task = session.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("error with https request", error)
+                //print("error with https request", error)
                 resp.error = true
-                resp.error_string = error.localizedDescription
-                
-                semaphore.signal();
-                return
+                completion((true, data ?? Data()))
             }
             let httpResponse = response as? HTTPURLResponse
             if (httpResponse == nil || data == nil) {
                 // this will happen when the request is cancelled
                 // or there is a failure with the request
-                resp.error = true
-                resp.error_string = "no data returned"
-                semaphore.signal();
+                //print("https request failure")
                 return
             }
             if (200...299).contains(httpResponse!.statusCode) {
                 // good response
-                resp.response_code = httpResponse!.statusCode
+                
+                // all of the object information is in the response headers
+                //print(httpResponse?.allHeaderFields)
+                // data is the object as Data
+                
                 resp.headers = (httpResponse?.allHeaderFields)!;
                 resp.data = data!;
-                resp.error = false;
                 
-                semaphore.signal();
-                return;
+                resp.error = false;
+                completion((false, data!))
                 
             } else {
-                //print("got bad https response code", httpResponse!.statusCode)
-                //print("response", response as Any)
-                
-                resp.response_code = httpResponse!.statusCode
+                print("got bad https response code", httpResponse!.statusCode)
+                print("response", response as Any)
                 resp.error = true
-                resp.error_string = httpResponse.debugDescription
-                resp.data = data!;
                 
-                semaphore.signal();
-                return;
+                // set data to the statusCode
+                // should be able to figure that out since apple can't manage to provide this in the completion handler
+                // and they can't manage to get delegates and completion handlers to work together
+                let custom_data = String(httpResponse!.statusCode).data(using: String.Encoding.utf8)
+                
+                let string: String = String(data: data!, encoding: .utf8)!;
+                //print(string)
+                completion((true, custom_data ?? Data()))
+                
             }
             
         }
         
         task.resume();
         
-        semaphore.wait()
-        return resp;
+        return task;
         
     }
     
