@@ -83,6 +83,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBOutlet weak var colview_apps: UICollectionView!
     @IBOutlet weak var search_field_apps: UITextField!
     @IBOutlet weak var single_app_view: UIView!
+    let api: rest_api = rest_api()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -90,6 +91,27 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         
         colview_apps.dataSource = self
         colview_apps.delegate = self
+        
+        let resp: rest_api.get_request_resp = (api.get_request(endpoint: "search", args: ["term":"pixar"]))
+        
+        print(resp)
+        
+        if (resp.error) {
+            // there was an error updating the transaction
+            print("error updating transaction at http level")
+        } else {
+            let decoder = JSONDecoder()
+            do {
+                let nt = try decoder.decode(rest_api.result.self, from: resp.data)
+                
+                print(nt)
+                
+            } catch {
+                print("error from rest api")
+                print(error)
+            }
+            
+        }
         
         colview_apps.reloadData()
     }

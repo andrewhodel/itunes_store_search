@@ -14,6 +14,7 @@
 		A3E103DF220490B800CDEE0C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A3E103DD220490B800CDEE0C /* LaunchScreen.storyboard */; };
 		A3E103EA220490B800CDEE0C /* itunes_store_searchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E103E9220490B800CDEE0C /* itunes_store_searchTests.swift */; };
 		A3E103F5220490B800CDEE0C /* itunes_store_searchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E103F4220490B800CDEE0C /* itunes_store_searchUITests.swift */; };
+		A3E10403220496CE00CDEE0C /* rest_api.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E10402220496CE00CDEE0C /* rest_api.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		A3E103F0220490B800CDEE0C /* itunes store searchUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "itunes store searchUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3E103F4220490B800CDEE0C /* itunes_store_searchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = itunes_store_searchUITests.swift; sourceTree = "<group>"; };
 		A3E103F6220490B800CDEE0C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A3E10402220496CE00CDEE0C /* rest_api.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rest_api.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 				A3E103DB220490B800CDEE0C /* Assets.xcassets */,
 				A3E103DD220490B800CDEE0C /* LaunchScreen.storyboard */,
 				A3E103E0220490B800CDEE0C /* Info.plist */,
+				A3E10402220496CE00CDEE0C /* rest_api.swift */,
 			);
 			path = "itunes store search";
 			sourceTree = "<group>";
@@ -258,6 +261,7 @@
 			files = (
 				A3E103D7220490B600CDEE0C /* ViewController.swift in Sources */,
 				A3E103D5220490B600CDEE0C /* AppDelegate.swift in Sources */,
+				A3E10403220496CE00CDEE0C /* rest_api.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
