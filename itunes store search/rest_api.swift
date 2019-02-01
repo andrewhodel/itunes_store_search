@@ -2,8 +2,8 @@
 //  rest_api.swift
 //  Clean Budget
 //
-//  Created by Andrew Hodel on 12/26/18.
-//  Copyright © 2018. All rights reserved.
+//  Created by Andrew Hodel on 2/1/19.
+//  Copyright © 2019. All rights reserved.
 //
 
 import Foundation
